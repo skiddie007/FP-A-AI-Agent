@@ -180,7 +180,7 @@ def run_fp_a_agent(user_message: str, audience: str = "CEO") -> str:
     full_prompt = f"{FP_A_SYSTEM_PROMPT}\n\n{audience_instruction}\n\nUser Request: {user_message}"
     
     try:
-        model = genai.GenerativeModel(''gemini-1.5-pro')')
+        model = genai.GenerativeModel(''gemini-1.5-pro')'
         response = model.generate_content(full_prompt)
         return response.text
     except Exception as e:
