@@ -5,3 +5,13 @@ gatherUsageStats = false
 headless = true
 enableXsrfProtection = false
 maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+
+[logger]
+level = "info"
+
+[client]
+showErrorDetails = false
+allowRunOnSave = true
