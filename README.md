@@ -125,6 +125,66 @@ response_finance = run_fp_a_agent(prompt, audience="Finance Team")
 response_ops = run_fp_a_agent(prompt, audience="Operations")
 ```
 
+### Streamlit Web App (Windows & Desktop)
+
+You can run a simple UI using Streamlit.
+
+1. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Ensure your `.env` file is in the project folder:
+
+```text
+OPENAI_API_KEY=your_api_key_here
+```
+
+3. Start the app:
+
+```bash
+streamlit run app_streamlit.py
+```
+
+The app will open in your browser at `http://localhost:8501`.  
+Enter your prompt and choose the audience (CEO / CFO / Board / Finance Team / Operations).
+
+### Windows Console App
+
+For a lightweight Windows console app:
+
+1. Install deps:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Create `.env`:
+
+```text
+OPENAI_API_KEY=your_api_key_here
+```
+
+3. Run:
+
+```bash
+python app_cli.py
+```
+
+#### Build a single .exe (optional)
+
+To create a standalone Windows executable:
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --console --name "FP-A-AI-Agent" app_cli.py
+```
+
+Then use `dist/FP-A-AI-Agent.exe` on any Windows machine with your `.env` file in the same folder.
+
+
+
 ## Core Capabilities
 
 ### 1. Budgeting & Forecasting
