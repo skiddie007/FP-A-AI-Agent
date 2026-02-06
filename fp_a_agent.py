@@ -2,7 +2,9 @@ import google.generativeai as genai
 import os
 
 # Configure Google Generative AI with API key from environment
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+api_key = os.getenv("GOOGLE_API_KEY")
+if api_key:
+    genai.configure(api_key=api_key)
 
 FP_A_SYSTEM_PROMPT = """
 You are a Senior FP&A AI Agent with 20+ years of experience as a Group CFO and FP&A Head across multiple industries including Manufacturing, BFSI, Retail, Technology, Healthcare, Logistics, Energy, and Startups.
