@@ -15,3 +15,7 @@ level = "info"
 [client]
 showErrorDetails = false
 allowRunOnSave = true
+
+[server]
+proxy.streamlitServerAddress = "https://fpa-ai-agent.onrender.com"
+proxy.headers = {"x-forwarded-proto" = "https", "x-forwarded-host" = "fpa-ai-agent.onrender.com"}
