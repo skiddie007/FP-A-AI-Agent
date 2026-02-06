@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 from fp_a_agent import run_fp_a_agent
 import io
 from datetime import datetime
+from docx import Document
+from docx.shared import Inches, Pt
 
 # Load .env (GOOGLE_API_KEY)
 load_dotenv()
@@ -107,6 +109,74 @@ else:
                     
                     with col2:
                         output_placeholder.markdown(response)
+
+                                            # Download options
+                        st.markdown("---")
+                        st.markdown("### 💾 Download Analysis")
+                        
+                        col_d1, col_d2, col_d3, col_d4 = st.columns(4)
+                        
+                        # TXT Download
+                        with col_d1:
+                            txt_data = response
+                            st.download_button(
+                                label="📄 Download TXT",
+                                data=txt_data,
+                                file_name=f"FPA_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                                mime="text/plain"
+                            )
+                        
+                        # CSV Download
+                        with col_d2:
+                            # Create a simple CSV with the response
+                            csv_data = f"FP&A Analysis Report\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n{response}"
+                            st.download_button(
+                                label="📊 Download CSV",
+                                data=csv_data,
+                                file_name=f"FPA_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                mime="text/csv"
+                            )
+                        
+                        # DOCX Download
+                        with col_d3:
+                            # Create Word document
+                            doc = Document()
+                            doc.add_heading('FP&A Analysis Report', 0)
+                            doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                            doc.add_paragraph(response)
+                            
+                            # Save to bytes
+                            docx_buffer = io.BytesIO()
+                            doc.save(docx_buffer)
+                            docx_buffer.seek(0)
+                            
+                            st.download_button(
+                                label="📝 Download DOCX",
+                                data=docx_buffer.getvalue(),
+                                file_name=f"FPA_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            )
+                        
+                        # XLSX Download
+                        with col_d4:
+                            # Create Excel file
+                            excel_buffer = io.BytesIO()
+                            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                                # Create a dataframe with the analysis
+                                df_report = pd.DataFrame({
+                                    'FP&A Analysis Report': [response],
+                                    'Generated': [datetime.now().strftime('%Y-%m-%d %H:%M:%S')],
+                                    'Audience': [audience]
+                                })
+                                df_report.to_excel(writer, sheet_name='Analysis', index=False)
+                            excel_buffer.seek(0)
+                            
+                            st.download_button(
+                                label="📈 Download XLSX",
+                                data=excel_buffer.getvalue(),
+                                file_name=f"FPA_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            )
                         
                         # Generate sample visualizations if data is uploaded
                         if uploaded_data is not None and include_charts:
