@@ -17,6 +17,8 @@ Provide your business context, metrics, and what you want the agent to do.
 )
 
 api_key = st.secrets.get("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY"))
+if api_key:
+    os.environ["GOOGLE_API_KEY"] = api_key
 if not api_key:
     st.error(
         "GOOGLE_API_KEY is not set. Create a `.env` file in the project folder "
