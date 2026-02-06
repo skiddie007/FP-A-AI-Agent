@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from fp_a_agent import run_fp_a_agent
 import io
+from data_analyzer import DataAnalyzer
 from datetime import datetime
 
 # Load .env (GOOGLE_API_KEY)
@@ -111,6 +112,62 @@ else:
                         # Generate sample visualizations if data is uploaded
                         if uploaded_data is not None and include_charts:
                             st.markdown("---")
+
+                                           # Download OUTPUT buttons
+                    st.markdown("---")
+                    st.markdown("### 💾 Download Analysis Output")
+                    
+                    out_col1, out_col2, out_col3, out_col4 = st.columns(4)
+                    
+                    with out_col1:
+                        txt_data = response.encode('utf-8')
+                        st.download_button(
+                            label="📄 Download TXT",
+                            data=txt_data,
+                            file_name=f"fpa_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                            mime="text/plain"
+                        )
+                    
+                    with out_col2:
+                        csv_output = response.encode('utf-8')
+                        st.download_button(
+                            label="📊 Download CSV",
+                            data=csv_output,
+                            file_name=f"fpa_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+                    
+                    with out_col3:
+                        # DOCX download
+                        try:
+                            from docx import Document
+                            doc = Document()
+                            doc.add_heading('FP&A Analysis Output', 0)
+                            doc.add_paragraph(response)
+                            docx_buffer = io.BytesIO()
+                            doc.save(docx_buffer)
+                            docx_buffer.seek(0)
+                            st.download_button(
+                                label="📃 Download DOCX",
+                                data=docx_buffer,
+                                file_name=f"fpa_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            )
+                        except ImportError:
+                            st.info("Install python-docx for DOCX export")
+                    
+                    with out_col4:
+                        # XLSX download (put response in a cell)
+                        xlsx_buffer = io.BytesIO()
+                        output_df = pd.DataFrame({'FP&A Analysis': [response]})
+                        output_df.to_excel(xlsx_buffer, index=False)
+                        xlsx_buffer.seek(0)
+                        st.download_button(
+                            label="📈 Download XLSX",
+                            data=xlsx_buffer,
+                            file_name=f"fpa_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
                             st.markdown("### 📊 Data Visualizations")
                             
                             # Try to detect numeric columns
@@ -167,3 +224,136 @@ else:
                             
                 except Exception as e:
                     st.error(f"Error running FP&A AI Agent: {e}")
+
+
+                # Advanced Data Exploration
+                if uploaded_data is not None:
+                    st.markdown("---")
+                    st.markdown("### 🔍 Advanced Data Explorer")
+                    st.markdown("Ask questions about your uploaded data or view comprehensive analysis.")
+                    
+                    # Initialize data analyzer
+                    analyzer = DataAnalyzer(uploaded_data)
+                    
+                    # Tabs for different analysis views
+                    tab1, tab2, tab3, tab4 = st.tabs(["💬 Chat with Data", "📊 Summary Stats", "📈 Trends", "💰 Financial Insights"])
+                    
+                    with tab1:
+                        st.markdown("#### Ask Questions About Your Data")
+                        
+                        # Initialize chat history
+                        if 'data_chat_history' not in st.session_state:
+                            st.session_state.data_chat_history = []
+                        
+                        # Display chat history
+                        for msg in st.session_state.data_chat_history:
+                            with st.chat_message(msg["role"]):
+                                st.markdown(msg["content"])
+                        
+                        # Chat input
+                        user_question = st.chat_input("Ask about your data (e.g., 'What is the total revenue?', 'Show me the averages')")
+                        
+                        if user_question:
+                            # Add user message
+                            st.session_state.data_chat_history.append({"role": "user", "content": user_question})
+                            with st.chat_message("user"):
+                                st.markdown(user_question)
+                            
+                            # Get response from analyzer
+                            answer = analyzer.query_data(user_question)
+                            st.session_state.data_chat_history.append({"role": "assistant", "content": answer})
+                            with st.chat_message("assistant"):
+                                st.markdown(answer)
+                    
+                    with tab2:
+                        st.markdown("#### Comprehensive Summary Statistics")
+                        summary = analyzer.get_summary_statistics()
+                        
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            st.metric("Total Rows", summary['total_rows'])
+                        with col_b:
+                            st.metric("Total Columns", summary['total_columns'])
+                        
+                        if 'numeric_stats' in summary:
+                            st.markdown("**Numeric Columns Analysis:**")
+                            for col, stats in summary['numeric_stats'].items():
+                                with st.expander(f"📊 {col}"):
+                                    col1, col2, col3 = st.columns(3)
+                                    col1.metric("Mean", f"{stats['mean']:.2f}")
+                                    col2.metric("Median", f"{stats['median']:.2f}")
+                                    col3.metric("Std Dev", f"{stats['std']:.2f}")
+                                    col1.metric("Min", f"{stats['min']:.2f}")
+                                    col2.metric("Max", f"{stats['max']:.2f}")
+                                    col3.metric("Sum", f"{stats['sum']:.2f}")
+                        
+                        if 'categorical_stats' in summary:
+                            st.markdown("**Categorical Columns Analysis:**")
+                            for col, stats in summary['categorical_stats'].items():
+                                with st.expander(f"🏷️ {col}"):
+                                    st.write(f"Unique Values: {stats['unique_values']}")
+                                    st.write("Most Common:")
+                                    st.write(stats['most_common'])
+                    
+                    with tab3:
+                        st.markdown("#### Trends and Patterns")
+                        trends = analyzer.get_trends_and_patterns()
+                        
+                        if trends:
+                            for col, trend_data in trends.items():
+                                with st.expander(f"📈 {col}"):
+                                    st.write(f"**Trend:** {trend_data['trend'].upper()}")
+                                    col1, col2, col3 = st.columns(3)
+                                    col1.metric("First Value", f"{trend_data['first_value']:.2f}")
+                                    col2.metric("Last Value", f"{trend_data['last_value']:.2f}")
+                                    col3.metric("Change %", f"{trend_data['change_percentage']:.2f}%")
+                        else:
+                            st.info("No trends detected. Upload time-series or sequential data.")
+                    
+                    with tab4:
+                        st.markdown("#### Financial Analysis Insights")
+                        fin_insights = analyzer.get_financial_insights()
+                        
+                        if fin_insights:
+                            if 'financial_columns_detected' in fin_insights:
+                                st.success(f"Found {len(fin_insights['financial_columns_detected'])} financial columns")
+                                st.write("Columns:", ", ".join(fin_insights['financial_columns_detected']))
+                                
+                                for col, metrics in fin_insights.items():
+                                    if col != 'financial_columns_detected':
+                                        with st.expander(f"💰 {col}"):
+                                            col1, col2 = st.columns(2)
+                                            col1.metric("Total", f"{metrics['total']:.2f}")
+                                            col2.metric("Average", f"{metrics['average']:.2f}")
+                                            st.write(f"**Trend:** {metrics['trend']}")
+                            else:
+                                st.info("No financial columns detected. Try columns with keywords like 'revenue', 'cost', 'profit', etc.")
+                        else:
+                            st.info("No financial insights available.")
+                    
+                    # Download analyzed data button
+                    st.markdown("---")
+                    st.markdown("### 💾 Download Analysis Data")
+                    
+                    download_col1, download_col2, download_col3 = st.columns(3)
+                    
+                    with download_col1:
+                        csv_data = uploaded_data.to_csv(index=False).encode('utf-8')
+                        st.download_button(
+                            label="📄 Download as CSV",
+                            data=csv_data,
+                            file_name=f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+                    
+                    with download_col2:
+                        # Excel download
+                        excel_buffer = io.BytesIO()
+                        uploaded_data.to_excel(excel_buffer, index=False)
+                        excel_buffer.seek(0)
+                        st.download_button(
+                            label="📊 Download as Excel",
+                            data=excel_buffer,
+                            file_name=f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
