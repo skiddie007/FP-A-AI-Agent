@@ -23,6 +23,33 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("""
+
+# Initialize session state for history
+if 'history' not in st.session_state:
+    st.session_state.history = []
+
+# Sidebar for History
+with st.sidebar:
+    st.markdown("### 📜 Analysis History")
+    
+    if st.button("🗑️ Clear History"):
+        st.session_state.history = []
+        st.session_state.analysis_output = None
+        st.rerun()
+    
+    st.markdown("---")
+    
+    if st.session_state.history:
+        for idx, item in enumerate(reversed(st.session_state.history)):
+            with st.expander(f"📊 Analysis #{len(st.session_state.history) - idx}"):
+                st.markdown(f"**Prompt:**")
+                st.text(item['prompt'][:200] + "..." if len(item['prompt']) > 200 else item['prompt'])
+                st.markdown(f"**Date:** {item['timestamp']}")
+                if st.button(f"📂 Load", key=f"load_{idx}"):
+                    st.session_state.analysis_output = item['output']
+                    st.rerun()
+    else:
+        st.info("No analysis history yet.")
     Use this app to run advanced FP&A analysis with a virtual CFO-level AI agent. 
     Provide your business context, metrics, upload financial data, and get comprehensive analysis with visualizations.
 """)
@@ -110,12 +137,8 @@ else:
         st.session_state.analysis_output = None
     
     with col2:
-            if 'history' not in st.session_state:
-        st.session_state.history = []
         st.markdown("### Output")
         output_placeholder = st.empty()
-    
-    if run_button:
         if not prompt.strip():
             st.warning("Please enter a prompt before running the agent.")
         else:
