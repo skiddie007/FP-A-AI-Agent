@@ -1,14 +1,7 @@
 [client]
-headless = true
-runOnSave = true
-port = 8501
-showErrorDetails = true
+gatherUsageStats = false
 
 [server]
 headless = true
-port = 8501
 enableXsrfProtection = false
 maxUploadSize = 200
-
-[browser]
-gatherUsageStats = false
