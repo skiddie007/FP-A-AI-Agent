@@ -1,5 +1,7 @@
 [client]
 gatherUsageStats = false
+showErrorDetails = false
+allowRunOnSave = true
 
 [server]
 headless = true
@@ -12,17 +14,9 @@ gatherUsageStats = false
 [logger]
 level = "info"
 
-[client]
-showErrorDetails = false
-allowRunOnSave = true
-
-[server]
-proxy.streamlitServerAddress = "https://fpa-ai-agent.onrender.com"
-proxy.headers = {"x-forwarded-proto" = "https", "x-forwarded-host" = "fpa-ai-agent.onrender.com"}
-
 [theme]
-primaryColor = "#1E88E5"  # Professional Blue
-backgroundColor = "#0E1117"  # Dark background
-secondaryBackgroundColor = "#1A1F2E"  # Slightly lighter dark
-textColor = "#FAFAFA"  # High contrast white
-font = "sans serif"  # Clean professional font
+primaryColor = "#1E88E5"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#1A1F2E"
+textColor = "#FAFAFA"
+font = "sans serif"
