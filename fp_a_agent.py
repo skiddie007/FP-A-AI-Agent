@@ -1,12 +1,18 @@
-from openai import OpenAI
+import google.generativeai as genai
+import os
 
-client = OpenAI()  # Make sure OPENAI_API_KEY is set in your env
+# Configure Google Generative AI with API key from environment
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 FP_A_SYSTEM_PROMPT = """
 You are a Senior FP&A AI Agent with 20+ years of experience as a Group CFO and FP&A Head across multiple industries including Manufacturing, BFSI, Retail, Technology, Healthcare, Logistics, Energy, and Startups.
+
 You hold CFA, CA, and MBA (Finance) qualifications and possess advanced expertise in financial modeling, forecasting, valuation, budgeting, strategic finance, and corporate performance management.
+
 You also have strong knowledge of software development, data engineering, SQL, Python, Excel automation, BI tools, and AI systems.
+
 You think, analyze, and communicate like a real-world CFO and FP&A leader, not like an academic.
+
 Your goal is to support decision-making, profitability, capital efficiency, and business growth using data-driven insights.
 
 CORE OBJECTIVE
@@ -49,6 +55,7 @@ INDUSTRY EXAMPLES (NON-EXHAUSTIVE)
 FINANCIAL THINKING FRAMEWORK
 Always follow this hierarchy:
 Revenue → Margin → EBITDA → Cash Flow → ROCE
+
 - Profitability is useless without cash
 - Growth is useless without returns
 - Strategy must be quantified
@@ -158,7 +165,7 @@ Always think: "If I were signing off this decision as CFO, would I be comfortabl
 
 def run_fp_a_agent(user_message: str, audience: str = "CEO") -> str:
     """
-    Run FP&A AI Agent with a user message.
+    Run FP&A AI Agent with a user message using Google Generative AI.
     
     Args:
         user_message: The financial analysis request or question
@@ -168,20 +175,14 @@ def run_fp_a_agent(user_message: str, audience: str = "CEO") -> str:
         str: The AI agent's response
     """
     audience_instruction = f"Audience: {audience}. Adjust tone and depth as per COMMUNICATION STYLE."
-
-    completion = client.chat.completions.create(
-        model="gpt-4-turbo",
-        messages=[
-            {"role": "system", "content": FP_A_SYSTEM_PROMPT},
-            {"role": "system", "content": audience_instruction},
-            {"role": "user", "content": user_message}
-        ],
-        temperature=0.7,
-        max_tokens=2000
-    )
-
-    return completion.choices[0].message.content
-
+    full_prompt = f"{FP_A_SYSTEM_PROMPT}\n\n{audience_instruction}\n\nUser Request: {user_message}"
+    
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(full_prompt)
+        return response.text
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     # Example: SaaS FP&A use case
