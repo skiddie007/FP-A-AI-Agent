@@ -39,6 +39,30 @@ if not api_key:
 else:
     # File upload section
     st.markdown("### 📎 Upload Financial Data (Optional)")
+
+        # Sidebar for History
+    with st.sidebar:
+        st.markdown("### 📜 Analysis History")
+        
+        if st.button("🗑️ Clear History"):
+            st.session_state.history = []
+            st.session_state.analysis_output = None
+            st.rerun()
+        
+        st.markdown("---")
+        
+        if st.session_state.history:
+            for idx, item in enumerate(reversed(st.session_state.history)):
+                with st.expander(f"📊 Analysis #{len(st.session_state.history) - idx}"):
+                    st.markdown(f"**Prompt:**")
+                    st.text(item['prompt'][:200] + "..." if len(item['prompt']) > 200 else item['prompt'])
+                    st.markdown(f"**Date:** {item['timestamp']}")
+                    if st.button(f"📂 Load", key=f"load_{idx}"):
+                        st.session_state.analysis_output = item['output']
+                        st.rerun()
+        else:
+            st.info("No analysis history yet.")
+
     uploaded_file = st.file_uploader(
         "Upload Excel/CSV file with financial data",
         type=["xlsx", "xls", "csv"],
@@ -86,6 +110,8 @@ else:
         st.session_state.analysis_output = None
     
     with col2:
+            if 'history' not in st.session_state:
+        st.session_state.history = []
         st.markdown("### Output")
         output_placeholder = st.empty()
     
@@ -119,6 +145,13 @@ else:
     # Display output from session state (persists across reruns)
     with col2:
         if st.session_state.analysis_output:
+
+                                # Save to history
+                    st.session_state.history.append({
+                        'prompt': prompt,
+                        'output': response,
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    })
             output_placeholder.markdown(st.session_state.analysis_output)
     
     # Show download buttons if output exists
