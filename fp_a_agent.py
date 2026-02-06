@@ -184,7 +184,7 @@ def run_fp_a_agent(user_message: str, audience: str = "CEO") -> str:
         response = model.generate_content(full_prompt)
         return response.text
     except Exception as e:
-        return f"Error: {str(e'gemini-1.5-pro')}"
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     # Example: SaaS FP&A use case
