@@ -80,6 +80,10 @@ else:
         include_charts = st.checkbox("Include data visualizations and metrics", value=True)
         include_formulas = st.checkbox("Generate Google Sheets formulas", value=True)
         run_button = st.button("🚀 Run FP&A Analysis", type="primary")
+            
+    # Initialize session state for output persistence
+    if 'analysis_output' not in st.session_state:
+        st.session_state.analysis_output = None
     
     with col2:
         st.markdown("### Output")
@@ -107,9 +111,18 @@ else:
                     
                     response = run_fp_a_agent(enhanced_prompt, audience=audience)
                     
-                    with col2:
-                        output_placeholder.markdown(response)
+                    
+                                            
+                    # Store in session state for persistence
+                    st.session_state.analysis_output = response
                         
+    # Display output from session state (persists across reruns)
+    with col2:
+        if st.session_state.analysis_output:
+            output_placeholder.markdown(st.session_state.analysis_output)
+    
+    # Show download buttons if output exists
+    if st.session_state.analysis_output:
                         # Download options for OUTPUT
                         st.markdown("---")
                         st.markdown("### 💾 Download Analysis Results")
@@ -117,7 +130,7 @@ else:
                         dl_col1, dl_col2, dl_col3, dl_col4 = st.columns(4)
                         
                         with dl_col1:
-                            txt_data = response
+                            = st.session_state.analysis_output
                             st.download_button(
                                 label="📄 TXT",
                                 data=txt_data,
@@ -126,11 +139,11 @@ else:
                             )
                         
                         with dl_col2:
-                            csv_data = response
+                            csv_data = st.session_state.analysis_output
                             st.download_button(
                                 label="📊 CSV",
                                 data=csv_data,
-                                file_name=f"fpa_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                                file_name=st.session_state.analysis_output"fpa_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                                 mime="text/csv"
                             )
                         
@@ -140,7 +153,7 @@ else:
                                 doc = Document()
                                 doc.add_heading('FP&A Analysis Report', 0)
                                 doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                                doc.add_paragraph(response)
+                                doc.add_paragraph(st.session_state.analysis_output)
                                 
                                 docx_buffer = io.BytesIO()
                                 doc.save(docx_buffer)
@@ -156,11 +169,11 @@ else:
                                 st.info("⚠️ Install python-docx for DOCX support")
                         
                         with dl_col4:
-                            output_df = pd.DataFrame({'FP&A Analysis': [response]})
+                output_df = pd.DataFrame({'FP&A Analysis': [st.session_state.analysis_output]})
                             xlsx_buffer = io.BytesIO()
                             output_df.to_excel(xlsx_buffer, index=False, engine='openpyxl')
                             xlsx_buffer.seek(0)
-                            
+st.session_state.analysis_output
                             st.download_button(
                                 label="📈 XLSX",
                                 data=xlsx_buffer.getvalue(),
