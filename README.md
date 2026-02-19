@@ -395,8 +395,8 @@ This AI agent is designed to assist with financial analysis and planning. It sho
 ## Author
 
 Built by **skiddie007** - Financial Technology Developer
-- 20+ years FP&A expertise
-- CFA, CA, MBA (Finance)
+- 5+ years FP&A expertise
+- CFA,MBA (Finance)
 - Specialist in AI-powered financial automation
 
 ---
